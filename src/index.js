@@ -10,6 +10,7 @@ import reportWebVitals from './reportWebVitals'
 import { store } from './store'
 import theme from './theme'
 import './index.css'
+import Representation from './components/representation'
 
 ReactDOM.render(
   <React.StrictMode>
@@ -28,6 +29,7 @@ ReactDOM.render(
             <Route path="/" />
             <Route path="oeuvres" element={<Oeuvres />} />
             <Route path="oeuvre/:id" element={<Oeuvre />} />
+            <Route path="representation/:id" element={<Representation />} />
           </Routes>
         </Provider>
       </BrowserRouter>

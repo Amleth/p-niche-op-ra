@@ -1,3 +1,4 @@
+import { PREFIX } from '../../rdf'
 export default (id) => `
 PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
 PREFIX doremus: <http://data.doremus.org/ontology#>
@@ -6,8 +7,8 @@ PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 SELECT *
 WHERE {
   GRAPH <http://data-iremus.huma-num.fr/graph/peniche-opera> {
-    VALUES ?id { <${PREFIX}${id}> }
-    ?id rdf:type lrmoo:F2_Expression .
+    VALUES ?f2 { <${PREFIX}${id}> }
+    ?f2 rdf:type lrmoo:F2_Expression .
 
     # Série de représentations
     ?f25 crm:P165_incorporates ?f2 .
@@ -35,4 +36,5 @@ WHERE {
     }
   }
 }
+ORDER BY ?sub_f31_p82
 `

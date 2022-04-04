@@ -17,11 +17,16 @@ import {
   useGetOeuvreEffectifsQuery,
   useGetOeuvreQuery,
   useGetOeuvreRolesQuery,
-  useGetOeuvrePartsQuery
+  useGetOeuvrePartsQuery,
+  useGetWorkSeriesWithDatesQuery,
+  useGetWorkSeriesWithoutDatesQuery
 } from '../services/sparqlEndpoint'
+import { useNavigate } from 'react-router-dom'
 
 export default () => {
   const urlParams = useParams()
+  const navigate = useNavigate()
+
   const getOeuvreQuery = useGetOeuvreQuery(urlParams.id)
   const getOeuvreEffectifsQuery = useGetOeuvreEffectifsQuery(urlParams.id)
   const getOeuvreRolesQuery = useGetOeuvreRolesQuery(urlParams.id)
@@ -33,11 +38,18 @@ export default () => {
     id: urlParams.id,
     property: 'crm:P148_has_component'
   })
+  const getWorkSeriesWithDates = useGetWorkSeriesWithDatesQuery(urlParams.id)
+  const getWorkSeriesWithoutDates = useGetWorkSeriesWithoutDatesQuery(
+    urlParams.id
+  )
+
   const [oeuvre, setOeuvre] = useState([])
   const [effectifs, setEffectifs] = useState([])
   const [roles, setRoles] = useState([])
   const [p165, setP165] = useState([])
   const [p148, setP148] = useState([])
+  const [seriesWithDates, setSeriesWithDates] = useState([])
+  const [seriesWithoutDates, setSeriesWithoutDates] = useState([])
 
   useEffect(() => {
     if (getOeuvreQuery.status === 'fulfilled') {
@@ -73,13 +85,32 @@ export default () => {
         }))
       )
     }
+    if (getWorkSeriesWithDates.status === 'fulfilled') {
+      setSeriesWithDates(
+        Object.entries(
+          _.groupBy(values(getWorkSeriesWithDates.data.results.bindings), 'f31')
+        )
+      )
+    }
+    if (getWorkSeriesWithoutDates.status === 'fulfilled') {
+      setSeriesWithoutDates(
+        Object.entries(
+          _.groupBy(
+            values(getWorkSeriesWithoutDates.data.results.bindings),
+            'f31'
+          )
+        )
+      )
+    }
   }, [
     urlParams,
     getOeuvreQuery,
     getOeuvreEffectifsQuery,
     getOeuvreRolesQuery,
     getOeuvrePartsP165Query,
-    getOeuvrePartsP148Query
+    getOeuvrePartsP148Query,
+    getWorkSeriesWithDates,
+    getWorkSeriesWithoutDates
   ])
 
   let i = 0
@@ -193,6 +224,70 @@ export default () => {
               </TableBody>
             </Table>
           </TableContainer>
+        </>
+      )}
+      {seriesWithDates.length > 0 && (
+        <>
+          <Typography variant="h2">Séries de représentations</Typography>
+          {seriesWithDates.map(([serie, dates]) => (
+            <TableContainer component={Paper} sx={{ m: 2, mb: 4 }} key={serie}>
+              <Table size="small">
+                <TableBody>
+                  {dates.map((date) => (
+                    <TableRow
+                      key={date.sub_f31}
+                      onClick={(e) =>
+                        navigate(
+                          '/representation/' + date.sub_f31.replace(PREFIX, '')
+                        )
+                      }
+                    >
+                      <TableCell>{date.sub_f31_type_label}</TableCell>
+                      <TableCell>
+                        {new Date(date.sub_f31_p82).toLocaleDateString('fr-FR')}
+                      </TableCell>
+                      <TableCell>{date.sub_f31_place_label}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          ))}
+        </>
+      )}
+      {seriesWithoutDates.length > 0 && (
+        <>
+          <Typography variant="h2" sx={{ mb: 2 }}>
+            Séries de représentations
+          </Typography>
+          {seriesWithoutDates.map(([serie, m28_list]) => (
+            <React.Fragment key={serie}>
+              <Typography variant="h3">
+                {m28_list[0].f31_place_label} (
+                {new Date(m28_list[0].f31_begin).toLocaleDateString('fr-FR') +
+                  ' — ' +
+                  new Date(m28_list[0].f31_end).toLocaleDateString('fr-FR')}
+                )
+              </Typography>
+              <TableContainer
+                component={Paper}
+                sx={{ m: 2, mb: 4 }}
+                key={serie}
+              >
+                <Table size="small">
+                  <TableBody>
+                    {m28_list.map((m28) => (
+                      <TableRow key={m28.m28}>
+                        <TableCell>{m28.m42_type_label}</TableCell>
+                        <TableCell>{m28.m28_actor_label}</TableCell>
+                        <TableCell>{m28.m14_label}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </React.Fragment>
+          ))}
         </>
       )}
     </Container>
