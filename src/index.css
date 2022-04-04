@@ -1,0 +1,17 @@
+.MuiDataGrid-cellContent {
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+.MuiDataGrid-cell {
+  line-height: unset !important;
+  max-height: none !important;
+}
+
+.MuiDataGrid-row {
+  max-height: none !important;
+}
+
+.MuiDataGrid-renderingZone {
+  max-height: none !important;
+}
